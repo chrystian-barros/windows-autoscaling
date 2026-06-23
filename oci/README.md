@@ -1,18 +1,8 @@
 # OCI Windows Autoscaling Module
 
-This Terraform module provisions a fully automated **Windows Server autoscaling infrastructure** on Oracle Cloud Infrastructure (OCI). It deploys an Instance Pool backed by a Network Load Balancer, CPU-based autoscaling policies, an NFS file system for shared storage, a serverless function triggered by OCI Events to initialize new instances, and a KMS Vault for secrets management (Windows admin password, Datadog API key, Jenkins API key).
+This Terraform module provisions a fully automated **Windows Server autoscaling infrastructure** on Oracle Cloud Infrastructure (OCI). It deploys an Instance Pool backed by a Network Load Balancer, CPU-based autoscaling policies, an NFS file system for shared storage, a serverless function triggered by OCI Events to initialize new instances, and a KMS Vault for secrets management (Windows admin password).
 
 The module solves the challenge of running stateful Windows workloads at scale on OCI by combining instance pool autoscaling with event-driven post-boot configuration via OCI Functions — eliminating the need for manual setup of newly launched servers.
-
----
-
-## Dependencies
-
-![Terraform Dependency Graph](graph.png)
-
-> The graph above visualizes the relationships and dependencies between all resources managed by this module. It is auto-generated using `terraform graph` and Graphviz.
-
----
 
 ## Usage
 
@@ -23,7 +13,7 @@ module "windows_autoscaling" {
   identity = {
     tenancy_ocid        = "ocid1.tenancy.oc1..example"
     compartment_name    = "my-compartment"
-    availability_domain = "zEtg:SA-SAOPAULO-1-AD-1"
+    availability_domain = var.identity.availability_domain
     region_prefix       = "gru.ocir.io"
     tags = {
       project    = "windows-autoscaling"
@@ -70,7 +60,6 @@ module "windows_autoscaling" {
         display_name       = "setup-windows-server"
         memory_in_gbs      = 256
         timeout_in_seconds = 300
-        image_id           = "ocid1.image.oc1..function-example"
         main_version       = 1
         minor_version      = 0
         patch_version      = 0
@@ -94,7 +83,6 @@ module "windows_autoscaling" {
 
   secret = {
     windows_server_password = var.windows_password
-    datadog_api_key         = var.datadog_api_key
   }
 }
 ```
@@ -154,8 +142,6 @@ No modules.
 | [oci_network_load_balancer_backend_set.http_backend_set](https://registry.terraform.io/providers/oracle/oci/8.5.0/docs/resources/network_load_balancer_backend_set) | resource |
 | [oci_network_load_balancer_listener.nlb_listener](https://registry.terraform.io/providers/oracle/oci/8.5.0/docs/resources/network_load_balancer_listener) | resource |
 | [oci_network_load_balancer_network_load_balancer.nlb](https://registry.terraform.io/providers/oracle/oci/8.5.0/docs/resources/network_load_balancer_network_load_balancer) | resource |
-| [oci_vault_secret.datadog_api_key](https://registry.terraform.io/providers/oracle/oci/8.5.0/docs/resources/vault_secret) | resource |
-| [oci_vault_secret.jenkins_api_key](https://registry.terraform.io/providers/oracle/oci/8.5.0/docs/resources/vault_secret) | resource |
 | [oci_vault_secret.secret](https://registry.terraform.io/providers/oracle/oci/8.5.0/docs/resources/vault_secret) | resource |
 | [oci_core_subnets.subnets](https://registry.terraform.io/providers/oracle/oci/8.5.0/docs/data-sources/core_subnets) | data source |
 | [oci_core_vcns.vcns](https://registry.terraform.io/providers/oracle/oci/8.5.0/docs/data-sources/core_vcns) | data source |
@@ -166,11 +152,11 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_autoscaling_group"></a> [autoscaling\_group](#input\_autoscaling\_group) | n/a | <pre>object({<br/>  minimum_instance_count = optional(number, 1)<br/>  maximum_instance_count = number<br/>  compute = object({<br/>    display_name            = string<br/>    image_id                = string<br/>    ocpus                   = number<br/>    memory_in_gbs           = number<br/>    boot_volume_size_in_gbs = number<br/>    boot_volume_vpus_per_gb = number<br/>  })<br/>  load_balancer = object({<br/>    ip_version              = optional(string, "IPV4")<br/>    listener_protocol       = optional(string, "TCP")<br/>    listener_port           = number<br/>    health_checker_protocol = optional(string, "TCP")<br/>    health_checker_port     = number<br/>    backend_port            = number<br/>  })<br/>  scaling_configuration = object({<br/>    initialize_instance_function = object({<br/>      display_name       = string<br/>      memory_in_gbs      = number<br/>      timeout_in_seconds = optional(number, 300)<br/>      image_id           = string<br/>      main_version       = number<br/>      minor_version      = number<br/>      patch_version      = number<br/>    })<br/>    scale_out = object({<br/>      change_count_by = optional(number, 1)<br/>      metric_type     = optional(string, "CPU_UTILIZATION")<br/>      operator        = optional(string, "GT")<br/>      value           = number<br/>    })<br/>    scale_in = object({<br/>      change_count_by = optional(number, -1)<br/>      metric_type     = optional(string, "CPU_UTILIZATION")<br/>      operator        = optional(string, "LT")<br/>      value           = number<br/>    })<br/>  })<br/>})</pre> | n/a | yes |
-| <a name="input_identity"></a> [identity](#input\_identity) | OCI identity variables | <pre>object({<br/>  tenancy_ocid        = string<br/>  compartment_name    = string<br/>  availability_domain = string<br/>  region_prefix       = string<br/>  tags = optional(object({<br/>    project    = string<br/>    owner      = string<br/>    repository = string<br/>    managedBy  = optional(string, "terraform")<br/>  }), object({<br/>    project = "windows-autoscaling"<br/>  }))<br/>  defined_tags = optional(object({}), null)<br/>})</pre> | n/a | yes |
+| <a name="input_autoscaling_group"></a> [autoscaling\_group](#input\_autoscaling\_group) | n/a | <pre>object({<br/>  minimum_instance_count = optional(number, 1)<br/>  maximum_instance_count = number<br/>  compute = object({<br/>    display_name            = string<br/>    image_id                = string<br/>    ocpus                   = number<br/>    memory_in_gbs           = number<br/>    boot_volume_size_in_gbs = number<br/>    boot_volume_vpus_per_gb = number<br/>  })<br/>  load_balancer = object({<br/>    ip_version              = optional(string, "IPV4")<br/>    listener_protocol       = optional(string, "TCP")<br/>    listener_port           = number<br/>    health_checker_protocol = optional(string, "TCP")<br/>    health_checker_port     = number<br/>    backend_port            = number<br/>  })<br/>  scaling_configuration = object({<br/>    initialize_instance_function = object({<br/>      display_name       = string<br/>      memory_in_gbs      = number<br/>      timeout_in_seconds = optional(number, 300)<br/>      main_version       = number<br/>      minor_version      = number<br/>      patch_version      = number<br/>    })<br/>    scale_out = object({<br/>      change_count_by = optional(number, 1)<br/>      metric_type     = optional(string, "CPU_UTILIZATION")<br/>      operator        = optional(string, "GT")<br/>      value           = number<br/>    })<br/>    scale_in = object({<br/>      change_count_by = optional(number, -1)<br/>      metric_type     = optional(string, "CPU_UTILIZATION")<br/>      operator        = optional(string, "LT")<br/>      value           = number<br/>    })<br/>  })<br/>})</pre> | n/a | yes |
+| <a name="input_identity"></a> [identity](#input\_identity) | OCI identity variables | <pre>object({<br/>  tenancy_ocid        = string<br/>  compartment_name    = string<br/>  availability_domain = string<br/>  region_prefix       = string<br/>  tags = object({<br/>    project    = string<br/>    owner      = string<br/>    repository = string<br/>    managedBy  = optional(string, "terraform")<br/>  })<br/>  defined_tags = optional(object({}), null)<br/>})</pre> | n/a | yes |
 | <a name="input_network"></a> [network](#input\_network) | OCI networking variables | <pre>object({<br/>  vcn_name         = string<br/>  subnet_name      = string<br/>  is_public_subnet = bool<br/>})</pre> | n/a | yes |
 | <a name="input_project"></a> [project](#input\_project) | Project variables | <pre>object({<br/>  environment = string<br/>  prefix      = string<br/>})</pre> | n/a | yes |
-| <a name="input_secret"></a> [secret](#input\_secret) | n/a | <pre>object({<br/>  windows_server_password = string<br/>  datadog_api_key         = string<br/>})</pre> | n/a | yes |
+| <a name="input_secret"></a> [secret](#input\_secret) | n/a | <pre>object({<br/>  windows_server_password = string<br/>})</pre> | n/a | yes |
 
 > **Note:** The `autoscaling_group` and `secret` variables are missing descriptions in the source code. Consider adding `description` attributes to improve documentation clarity.
 
