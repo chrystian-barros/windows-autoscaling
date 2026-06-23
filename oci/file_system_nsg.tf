@@ -5,8 +5,8 @@ resource "oci_core_network_security_group" "filesystem-nsg" {
   vcn_id         = data.oci_core_vcns.vcns.virtual_networks[0].id
 
   #Optional
-  defined_tags = var.defined_tags
-  display_name = "${var.environment}-${var.project_prefix}-app_filesystem-nsg"
+  defined_tags = var.identity.defined_tags != null ? var.identity.defined_tags : null
+  display_name = "${var.project.environment}-${var.project.prefix}-filesystem-nsg"
 
   depends_on = [
     data.oci_identity_compartments.compartments,

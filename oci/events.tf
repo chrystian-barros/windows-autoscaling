@@ -9,7 +9,7 @@ resource "oci_events_rule" "event_rule" {
 
       #Optional
       description = "Rule to trigger serverless function to setup instances"
-      function_id = oci_functions_function.setup_windows_server.id
+      function_id = oci_functions_function.initialize_instance.id
     }
   }
   compartment_id = data.oci_identity_compartments.compartments.compartments[0].id
@@ -18,14 +18,12 @@ resource "oci_events_rule" "event_rule" {
       eventType = ["com.oraclecloud.computeapi.launchinstance.end"]
       data = {
         additionalDetails = {
-          imageId = "${var.custom_image_id}"
+          imageId = "${var.autoscaling_group.compute.image_id}"
         }
       }
     }
   )
-  display_name = "${var.environment}-${var.project_prefix}-event_rule"
+  display_name = "${var.project.environment}-${var.project.prefix}-event_rule"
   is_enabled   = true
-
-  #Optional
-  defined_tags = var.defined_tags
+  defined_tags = var.identity.defined_tags != null ? var.identity.defined_tags : null
 }

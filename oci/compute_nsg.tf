@@ -3,10 +3,8 @@ resource "oci_core_network_security_group" "instances_nsg" {
   #Required
   compartment_id = data.oci_identity_compartments.compartments.compartments[0].id
   vcn_id         = data.oci_core_vcns.vcns.virtual_networks[0].id
-
-  #Optional
-  defined_tags = var.defined_tags
-  display_name = "${var.environment}-${var.project_prefix}-app_server-nsg"
+  display_name = "${var.project.environment}-${var.project.prefix}-app_server-nsg"
+  defined_tags = var.identity.defined_tags != null ? var.identity.defined_tags : null
 
   depends_on = [
     data.oci_identity_compartments.compartments,

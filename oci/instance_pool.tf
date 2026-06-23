@@ -4,7 +4,7 @@ resource "oci_core_instance_pool" "instance_pool" {
   instance_configuration_id = oci_core_instance_configuration.instance_configuration.id
   placement_configurations {
     #Required
-    availability_domain = "zEtg:SA-SAOPAULO-1-AD-1"
+    availability_domain = var.identity.availability_domain
 
     #Optional
     primary_vnic_subnets {
@@ -15,17 +15,17 @@ resource "oci_core_instance_pool" "instance_pool" {
       is_assign_ipv6ip = false
     }
   }
-  size = var.server_count
+  size = var.autoscaling_group.minimum_instance_count
 
   #Optional
-  defined_tags                    = var.defined_tags
-  display_name                    = "${var.environment}-${var.app_server_display_name}-instance_pool"
-  instance_display_name_formatter = "${var.environment}-${var.app_server_display_name}-$${launchCount}"
+  defined_tags                    = var.identity.defined_tags
+  display_name                    = "${var.project.environment}-${var.autoscaling_group.compute.display_name}-instance_pool"
+  instance_display_name_formatter = "${var.project.environment}-${var.autoscaling_group.compute.display_name}-$${launchCount}"
   load_balancers {
     #Required
     backend_set_name = oci_network_load_balancer_backend_set.http_backend_set.name
     load_balancer_id = oci_network_load_balancer_network_load_balancer.nlb.id
-    port             = var.backend_port
+    port             = var.autoscaling_group.load_balancer.backend_port
     vnic_selection   = "PrimaryVnic"
   }
 

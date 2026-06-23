@@ -1,7 +1,7 @@
 resource "oci_identity_dynamic_group" "dynamic_group" {
-  compartment_id = var.root_compartment_id
-  name           = "${var.environment}-${var.project_prefix}-app_dynamic_group"
-  description    = "Group for the serverless functions from PR Infrastructure"
+  compartment_id = var.identity.tenancy_ocid
+  name           = "${var.project.environment}-${var.project.prefix}-dynamic_group"
+  description    = "Group for the serverless functions"
   matching_rule  = "ALL {resource.type = 'fnfunc', resource.compartment.id = '${data.oci_identity_compartments.compartments.compartments[0].id}'}"
 
   depends_on = [
@@ -10,8 +10,8 @@ resource "oci_identity_dynamic_group" "dynamic_group" {
 }
 
 resource "oci_identity_policy" "allow_get_secrets" {
-  compartment_id = var.root_compartment_id
-  name           = "${var.environment}-${var.project_prefix}-app_secret_policy"
+  compartment_id = var.identity.tenancy_ocid
+  name           = "${var.project.environment}-${var.project.prefix}-secret_policy"
   description    = "Policy allowing dynamic group ${oci_identity_dynamic_group.dynamic_group.name} to retrieve secret content"
   statements = [
     "Allow dynamic-group ${oci_identity_dynamic_group.dynamic_group.name} to use keys in compartment id ${data.oci_identity_compartments.compartments.compartments[0].id}",

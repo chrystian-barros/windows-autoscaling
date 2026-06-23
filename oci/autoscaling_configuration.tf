@@ -2,7 +2,8 @@ resource "oci_autoscaling_auto_scaling_configuration" "instance_pool_autoscaling
 
   # REQUIRED
   compartment_id = data.oci_identity_compartments.compartments.compartments[0].id
-  display_name   = "${var.environment}-${var.app_server_display_name}-autoscaling"
+  display_name   = "${var.project.environment}-${var.autoscaling_group.compute.display_name}-autoscaling"
+  defined_tags = var.identity.defined_tags != null ? var.identity.defined_tags : null
 
   cool_down_in_seconds = 300
   is_enabled           = true
@@ -15,14 +16,13 @@ resource "oci_autoscaling_auto_scaling_configuration" "instance_pool_autoscaling
 
   # POLICIES
   policies {
-
-    display_name = "cpu-autoscaling-policy"
+    display_name = "${var.project.environment}-${var.autoscaling_group.compute.display_name}-cpu-autoscaling-policy"
     policy_type  = "threshold"
 
     capacity {
-      initial = var.server_count
-      min     = var.server_count
-      max     = var.environment == "dev" ? (var.server_count * 2) : (var.server_count * 5)
+      initial = var.autoscaling_group.minimum_instance_count
+      min     = var.autoscaling_group.minimum_instance_count
+      max     = var.autoscaling_group.maximum_instance_count
     }
 
     # SCALE OUT: CPU > 70%
@@ -30,14 +30,14 @@ resource "oci_autoscaling_auto_scaling_configuration" "instance_pool_autoscaling
       display_name = "scale-out-on-high-cpu"
       action {
         type  = "CHANGE_COUNT_BY"
-        value = 1
+        value = var.autoscaling_group.scaling_configuration.scale_out.change_count_by
       }
 
       metric {
-        metric_type = "CPU_UTILIZATION"
+        metric_type = var.autoscaling_group.scaling_configuration.scale_out.metric_type
         threshold {
-          operator = "GT"
-          value    = 70
+          operator = var.autoscaling_group.scaling_configuration.scale_out.operator
+          value    = var.autoscaling_group.scaling_configuration.scale_out.value
         }
       }
     }
@@ -47,14 +47,14 @@ resource "oci_autoscaling_auto_scaling_configuration" "instance_pool_autoscaling
       display_name = "scale-in-on-low-cpu"
       action {
         type  = "CHANGE_COUNT_BY"
-        value = -1
+        value = var.autoscaling_group.scaling_configuration.scale_in.change_count_by
       }
 
       metric {
-        metric_type = "CPU_UTILIZATION"
+        metric_type = var.autoscaling_group.scaling_configuration.scale_in.metric_type
         threshold {
-          operator = "LT"
-          value    = 30
+          operator = var.autoscaling_group.scaling_configuration.scale_in.operator
+          value    = var.autoscaling_group.scaling_configuration.scale_in.value
         }
       }
     }

@@ -4,9 +4,9 @@ resource "oci_file_storage_filesystem_snapshot_policy" "filesystem_snapshot_poli
   compartment_id      = data.oci_identity_compartments.compartments.compartments[0].id
 
   #Optional
-  defined_tags  = var.defined_tags
-  display_name  = "${var.environment}-${var.project_prefix}-app_fs_snapshot_policy"
-  policy_prefix = "${var.environment}-${var.project_prefix}-app"
+  defined_tags  = var.identity.defined_tags != null ? var.identity.defined_tags : null
+  display_name  = "${var.project.environment}-${var.project.prefix}-app_fs_snapshot_policy"
+  policy_prefix = "${var.project.environment}-${var.project.prefix}-app"
 
   schedules {
     #Required
@@ -28,8 +28,8 @@ resource "oci_file_storage_file_system" "file_system" {
   compartment_id      = data.oci_identity_compartments.compartments.compartments[0].id
 
   #Optional
-  defined_tags                  = var.defined_tags
-  display_name                  = "${var.environment}-${var.project_prefix}-app-filesystem"
+  defined_tags                  = var.identity.defined_tags != null ? var.identity.defined_tags : null
+  display_name                  = "${var.project.environment}-${var.project.prefix}-app-filesystem"
   filesystem_snapshot_policy_id = oci_file_storage_filesystem_snapshot_policy.filesystem_snapshot_policy.id
 
   depends_on = [
@@ -45,8 +45,8 @@ resource "oci_file_storage_mount_target" "mount_target" {
   subnet_id           = data.oci_core_subnets.subnets.subnets[0].id
 
   #Optional
-  defined_tags = var.defined_tags
-  display_name = "${var.environment}-${var.project_prefix}-app-mount_target"
+  defined_tags = var.identity.defined_tags != null ? var.identity.defined_tags : null
+  display_name = "${var.project.environment}-${var.project.prefix}-app-mount_target"
 
   nsg_ids = [
     oci_core_network_security_group.filesystem-nsg.id
@@ -64,7 +64,7 @@ resource "oci_file_storage_export_set" "export_set" {
   mount_target_id = oci_file_storage_mount_target.mount_target.id
 
   #Optional
-  display_name = "${var.environment}-${var.project_prefix}-app-export_set"
+  display_name = "${var.project.environment}-${var.project.prefix}-app-export_set"
 
   depends_on = [
     oci_file_storage_mount_target.mount_target
