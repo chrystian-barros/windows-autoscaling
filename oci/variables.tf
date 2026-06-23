@@ -85,7 +85,6 @@ variable "autoscaling_group" {
 variable "secret" {
   type = object({
     windows_server_password = string
-    datadog_api_key = string
   })
   sensitive = true
 }

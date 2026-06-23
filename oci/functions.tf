@@ -14,7 +14,6 @@ resource "oci_functions_application" "application" {
     "MOUNT_TARGET_IP" : "${oci_file_storage_mount_target.mount_target.ip_address}"
     "EXPORT_PATH" : "${oci_file_storage_export.export.path}"
     "SECRET_OCID" : "${oci_vault_secret.secret.id}"
-    "DATADOG_API_KEY" : "${oci_vault_secret.datadog_api_key.id}"
     "POWERSHELL_MODULE_PATH" : "${oci_file_storage_export.powershell_modules_export.path}"
   }
 
