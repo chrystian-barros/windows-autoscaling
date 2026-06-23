@@ -8,7 +8,7 @@ The module solves the challenge of running stateful Windows workloads at scale o
 
 ```hcl
 module "windows_autoscaling" {
-  source = "./oci"
+  source = "git::git@github.com:chrystian-barros/windows-autoscaling.git//oci?ref=v1.0.0"
 
   identity = {
     tenancy_ocid        = "ocid1.tenancy.oc1..example"
