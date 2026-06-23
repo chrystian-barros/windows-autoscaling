@@ -22,7 +22,7 @@ resource "oci_core_instance_configuration" "instance_configuration" {
 
       create_vnic_details {
         subnet_id        = data.oci_core_subnets.subnets.subnets[0].id
-        assign_public_ip = false
+        assign_public_ip = var.network.is_public_subnet == true ? true : false
         defined_tags     = var.identity.defined_tags
         nsg_ids = [
           oci_core_network_security_group.instances_nsg.id

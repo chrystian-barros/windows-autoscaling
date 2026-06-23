@@ -18,10 +18,10 @@ resource "oci_network_load_balancer_backend_set" "http_backend_set" {
   #Required
   health_checker {
     #Required
-    protocol = var.load_balancer.health_checker_protocol
+    protocol = var.autoscaling_group.load_balancer.health_checker_protocol
 
     #Optional
-    port    = var.load_balancer.health_checker_port
+    port    = var.autoscaling_group.load_balancer.health_checker_port
     retries = 2
   }
   name                     = "${var.project.environment}-${var.project.prefix}-nlb_backend_set"
@@ -29,7 +29,7 @@ resource "oci_network_load_balancer_backend_set" "http_backend_set" {
   policy                   = "FIVE_TUPLE"
 
   #Optional
-  ip_version                  = var.load_balancer.ip_version
+  ip_version                  = var.autoscaling_group.load_balancer.ip_version
   is_fail_open                = false
   is_instant_failover_enabled = false
   is_preserve_source          = false
@@ -44,9 +44,9 @@ resource "oci_network_load_balancer_listener" "nlb_listener" {
   default_backend_set_name = oci_network_load_balancer_backend_set.http_backend_set.name
   name                     = "${var.project.environment}-${var.project.prefix}-nlb_listener"
   network_load_balancer_id = oci_network_load_balancer_network_load_balancer.nlb.id
-  port                     = var.load_balancer.listener_port
-  protocol                 = var.listener_protocol.listener_protocol
+  port                     = var.autoscaling_group.load_balancer.listener_port
+  protocol                 = var.autoscaling_group.load_balancer.listener_protocol
 
   #Optional
-  ip_version = var.load_balancer.ip_version
+  ip_version = var.autoscaling_group.load_balancer.ip_version
 }

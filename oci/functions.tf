@@ -33,11 +33,16 @@ resource "oci_functions_function" "initialize_instance" {
 
   # Optional
   timeout_in_seconds = var.autoscaling_group.scaling_configuration.initialize_instance_function.timeout_in_seconds
+  provisioned_concurrency_config {
+    strategy = "CONSTANT"
+    count = 20
+  }
   image              = "${var.identity.region_prefix}/${data.oci_objectstorage_namespace.namespace.namespace}/${oci_functions_application.application.display_name}/${var.autoscaling_group.scaling_configuration.initialize_instance_function.display_name}:${local.function_version}"
 
   defined_tags = var.identity.defined_tags != null ? var.identity.defined_tags : null
   depends_on = [
     oci_functions_application.application,
-    data.oci_objectstorage_namespace.namespace
+    data.oci_objectstorage_namespace.namespace,
+    null_resource.push_image
   ]
 }

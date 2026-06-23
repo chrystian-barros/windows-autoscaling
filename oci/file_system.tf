@@ -1,6 +1,6 @@
 resource "oci_file_storage_filesystem_snapshot_policy" "filesystem_snapshot_policy" {
   #Required
-  availability_domain = "zEtg:SA-SAOPAULO-1-AD-1"
+  availability_domain = var.identity.availability_domain
   compartment_id      = data.oci_identity_compartments.compartments.compartments[0].id
 
   #Optional
@@ -24,7 +24,7 @@ resource "oci_file_storage_filesystem_snapshot_policy" "filesystem_snapshot_poli
 
 resource "oci_file_storage_file_system" "file_system" {
   #Required
-  availability_domain = "zEtg:SA-SAOPAULO-1-AD-1"
+  availability_domain = var.identity.availability_domain
   compartment_id      = data.oci_identity_compartments.compartments.compartments[0].id
 
   #Optional
@@ -40,7 +40,7 @@ resource "oci_file_storage_file_system" "file_system" {
 
 resource "oci_file_storage_mount_target" "mount_target" {
   #Required
-  availability_domain = "zEtg:SA-SAOPAULO-1-AD-1"
+  availability_domain = var.identity.availability_domain
   compartment_id      = data.oci_identity_compartments.compartments.compartments[0].id
   subnet_id           = data.oci_core_subnets.subnets.subnets[0].id
 
@@ -75,7 +75,7 @@ resource "oci_file_storage_export" "export" {
   #Required
   export_set_id  = oci_file_storage_export_set.export_set.id
   file_system_id = oci_file_storage_file_system.file_system.id
-  path           = "/puertorico_app"
+  path           = "/mounted_filesystem"
 
   depends_on = [
     oci_file_storage_export_set.export_set,

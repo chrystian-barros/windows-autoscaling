@@ -4,14 +4,12 @@ variable "identity" {
     compartment_name    = string
     availability_domain = string
     region_prefix = string
-    tags = optional(object({
+    tags = object({
       project    = string
       owner      = string
       repository = string
       managedBy  = optional(string, "terraform")
-    }), object({
-      project    = "windows-autoscaling"
-    }))
+    })
     defined_tags = optional(object({}), null)
   })
   description = "OCI identity variables"
@@ -61,7 +59,6 @@ variable "autoscaling_group" {
         display_name       = string
         memory_in_gbs      = number
         timeout_in_seconds = optional(number, 300)
-        image_id           = string
         main_version = number
         minor_version = number
         patch_version = number
@@ -75,7 +72,7 @@ variable "autoscaling_group" {
       scale_in = object({
         change_count_by = optional(number, -1)
         metric_type     = optional(string, "CPU_UTILIZATION")
-        operator        = optional(string, LT)
+        operator        = optional(string, "LT")
         value           = number
       })
     })
