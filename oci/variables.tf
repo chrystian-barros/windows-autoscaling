@@ -77,6 +77,7 @@ variable "autoscaling_group" {
       })
     })
   })
+  description = "Launch details for the autoscaling group components"
 }
 
 variable "secret" {
@@ -84,4 +85,5 @@ variable "secret" {
     windows_server_password = string
   })
   sensitive = true
+  description = "Secrets used in this module"
 }
