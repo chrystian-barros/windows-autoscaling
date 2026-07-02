@@ -15,6 +15,8 @@ resource "oci_functions_application" "application" {
     "EXPORT_PATH" : "${oci_file_storage_export.export.path}"
     "SECRET_OCID" : "${oci_vault_secret.secret.id}"
     "POWERSHELL_MODULE_PATH" : "${oci_file_storage_export.powershell_modules_export.path}"
+    "POWERSHELL_BUCKET" : "${oci_objectstorage_bucket.powershell_bucket[0].name}"
+    "POWERSHELL_TEMPLATE" : "${oci_objectstorage_object.powershell_template_file[0].object}"
   }
 
   depends_on = [
@@ -35,9 +37,12 @@ resource "oci_functions_function" "initialize_instance" {
   timeout_in_seconds = var.autoscaling_group.scaling_configuration.initialize_instance_function.timeout_in_seconds
   provisioned_concurrency_config {
     strategy = "CONSTANT"
-    count = 20
+    count    = 20
   }
-  image              = "${var.identity.region_prefix}/${data.oci_objectstorage_namespace.namespace.namespace}/${oci_functions_application.application.display_name}/${var.autoscaling_group.scaling_configuration.initialize_instance_function.display_name}:${local.function_version}"
+  image = (var.autoscaling_group.scaling_configuration.initialize_instance_function.image_id == null
+    ? "${var.identity.region_prefix}/${data.oci_objectstorage_namespace.namespace.namespace}/${oci_functions_application.application.display_name}/${var.autoscaling_group.scaling_configuration.initialize_instance_function.display_name}:${local.function_version}"
+    : var.autoscaling_group.scaling_configuration.initialize_instance_function.image_id
+  )
 
   defined_tags = var.identity.defined_tags != null ? var.identity.defined_tags : null
   depends_on = [

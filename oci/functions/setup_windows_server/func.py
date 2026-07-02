@@ -33,6 +33,15 @@ def initialize_function(ctx, data: io.BytesIO = None):
     get_vnic_response = core_client.get_vnic(
         vnic_id = list_vnic_attachments_response.data[0].vnic_id
     )
+    
+    # Read content of PowerShell Template file
+    object_storage_client = oci.object_storage.ObjectStorageClient(config={}, signer=signer)
+    namespace = object_storage_client.get_namespace().data
+    object_content = object_storage_client.get_object(
+        namespace, 
+        os.getenv('POWERSHELL_BUCKET'), 
+        os.getenv('POWERSHELL_TEMPLATE')
+    )
 
     # Create a session
     session = winrm.Session(
@@ -50,6 +59,8 @@ def initialize_function(ctx, data: io.BytesIO = None):
 Start-Transcript -Path "$env:USERPROFILE\Documents\debug.txt";
 $scriptContent = @'
 # Paste your custom PowerShell script here. It will be executed right after the instance creation.
+{object_content.data.text}
+
 # Rename de computer and restart
 Rename-Computer -NewName "{instance_name}" -Restart -Force;
 '@

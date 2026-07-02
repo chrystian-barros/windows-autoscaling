@@ -21,7 +21,7 @@ resource "oci_kms_key" "key" {
 
   protection_mode     = "HSM"
   management_endpoint = oci_kms_vault.vault.management_endpoint
-  defined_tags   = var.identity.defined_tags != null ? var.identity.defined_tags : null
+  defined_tags        = var.identity.defined_tags != null ? var.identity.defined_tags : null
 
   depends_on = [
     data.oci_identity_compartments.compartments,

@@ -1,4 +1,7 @@
 resource "null_resource" "push_image" {
+  # Conditional check: Validate if there is a custom function to be used or not
+  count = var.autoscaling_group.scaling_configuration.initialize_instance_function.image_id == null ? 1 : 0
+
   provisioner "local-exec" {
     command     = <<EOT
 docker build --network=host --no-cache -t ${var.identity.region_prefix}/${data.oci_objectstorage_namespace.namespace.namespace}/${oci_functions_application.application.display_name}/${var.autoscaling_group.scaling_configuration.initialize_instance_function.display_name}:${local.function_version} ./functions/setup_windows_server;

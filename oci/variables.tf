@@ -3,7 +3,7 @@ variable "identity" {
     tenancy_ocid        = string
     compartment_name    = string
     availability_domain = string
-    region_prefix = string
+    region_prefix       = string
     tags = object({
       project    = string
       owner      = string
@@ -56,12 +56,14 @@ variable "autoscaling_group" {
     })
     scaling_configuration = object({
       initialize_instance_function = object({
-        display_name       = string
-        memory_in_gbs      = number
-        timeout_in_seconds = optional(number, 300)
-        main_version = number
-        minor_version = number
-        patch_version = number
+        image_id                 = optional(string, null)
+        display_name             = string
+        memory_in_gbs            = optional(number, 3072)
+        timeout_in_seconds       = optional(number, 300)
+        main_version             = optional(number, null)
+        minor_version            = optional(number, null)
+        patch_version            = optional(number, null)
+        powershell_template_file = optional(string, null)
       })
       scale_out = object({
         change_count_by = optional(number, 1)
@@ -78,12 +80,52 @@ variable "autoscaling_group" {
     })
   })
   description = "Launch details for the autoscaling group components"
+
+  # If image_id is null, other values must not be null
+  validation {
+    condition = (
+      var.autoscaling_group.scaling_configuration.initialize_instance_function.image_id != null
+      || (
+        var.autoscaling_group.scaling_configuration.initialize_instance_function.main_version != null
+        && var.autoscaling_group.scaling_configuration.initialize_instance_function.minor_version != null
+        && var.autoscaling_group.scaling_configuration.initialize_instance_function.patch_version != null
+        && var.autoscaling_group.scaling_configuration.initialize_instance_function.powershell_template_file != null
+      )
+    )
+    error_message = <<EOT
+The following values must be not null when image_id is null:
+  main_version
+  minor_version
+  patch_version
+  powershell_template_file
+EOT
+  }
+
+  # If image_id is not null, other values must be null (they'll be ignored)
+  validation {
+    condition = (
+      var.autoscaling_group.scaling_configuration.initialize_instance_function.image_id == null
+      || (
+        var.autoscaling_group.scaling_configuration.initialize_instance_function.main_version == null
+        && var.autoscaling_group.scaling_configuration.initialize_instance_function.minor_version == null
+        && var.autoscaling_group.scaling_configuration.initialize_instance_function.patch_version == null
+        && var.autoscaling_group.scaling_configuration.initialize_instance_function.powershell_template_file == null
+      )
+    )
+    error_message = <<EOT
+The following values must be null when image_id is not null:
+  main_version
+  minor_version
+  patch_version
+  powershell_template_file
+EOT
+  }
 }
 
 variable "secret" {
   type = object({
     windows_server_password = string
   })
-  sensitive = true
+  sensitive   = true
   description = "Secrets used in this module"
 }

@@ -3,7 +3,7 @@ resource "oci_autoscaling_auto_scaling_configuration" "instance_pool_autoscaling
   # REQUIRED
   compartment_id = data.oci_identity_compartments.compartments.compartments[0].id
   display_name   = "${var.project.environment}-${var.autoscaling_group.compute.display_name}-autoscaling"
-  defined_tags = var.identity.defined_tags != null ? var.identity.defined_tags : null
+  defined_tags   = var.identity.defined_tags != null ? var.identity.defined_tags : null
 
   cool_down_in_seconds = 300
   is_enabled           = true
